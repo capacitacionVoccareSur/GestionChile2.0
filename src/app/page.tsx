@@ -1,69 +1,425 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useState } from "react";
+import {
+  Receipt,
+  Monitor,
+  Paintbrush,
+  ChevronLeft,
+  ChevronRight,
+  ExternalLink,
+} from "lucide-react";
+
+import { BentoGrid } from "@/components/bento/BentoGrid";
+import { BentoCard } from "@/components/bento/BentoCard";
+import { Header } from "@/components/Header";
+import { ProcedureModal } from "@/components/modal/ProcedureModal";
+import { PilotosModal } from "@/components/modal/PilotosModal";
+import { LinksModal } from "@/components/modal/LinksModal";
+import { ProveedoresModal } from "@/components/modal/ProveedoresModal";
+import { TomarDatosModal } from "@/components/modal/TomarDatosModal";
+
+import { procedimientos } from "@/data/procedimientos";
+import { planes } from "@/data/cuentas";
+import { extensiones, telefonosClientes } from "@/data/pilotos";
+import { links } from "@/data/links";
+import { proveedores } from "@/data/proveedores";
+import { preguntas } from "@/data/preguntas";
+
+import { Procedure, Plan, CategoriaPreguntas, SearchResult, SectionKey } from "@/types";
+import { ReactNode } from "react";
+
+type ModalKey = SectionKey | null;
+
+// ── Conversores a Procedure (para usar StepList en los modales) ──────────────
+
+function planToProcedure(plan: Plan): Procedure {
+  return {
+    id: plan.id,
+    title: plan.nombre,
+    category: plan.empresa,
+    steps: [
+      {
+        title: "Piloto / Validación",
+        description: plan.piloto,
+        note: plan.guionEntrada,
+      },
+      {
+        title: "Principales Servicios",
+        description: "",
+        subSteps: plan.servicios,
+      },
+      {
+        title: "Coberturas",
+        description: plan.coberturas,
+      },
+      ...(plan.tiempoReporte
+        ? [{ title: "Tiempo de Reporte", description: plan.tiempoReporte }]
+        : []),
+      {
+        title: "Gestión",
+        description: plan.gestion,
+        warning: plan.observaciones,
+      },
+    ],
+  };
+}
+
+function categoriaToProc(cat: CategoriaPreguntas): Procedure {
+  return {
+    id: cat.id,
+    title: `${cat.emoji} ${cat.titulo}`,
+    category: cat.categoria,
+    steps: cat.preguntas.map((preg) => ({
+      title: preg,
+      description: "",
+      note: undefined,
+    })),
+    ...(cat.notas
+      ? {
+          steps: [
+            ...cat.preguntas.map((preg) => ({ title: preg, description: "" })),
+            { title: "Nota importante", description: cat.notas! },
+          ],
+        }
+      : {}),
+  };
+}
+
+const planesAsProcedures = planes.map(planToProcedure);
+const preguntasAsProcedures = preguntas.map(categoriaToProc);
+
+// ── Índice de búsqueda global ─────────────────────────────────────────────────
+
+const searchData: SearchResult[] = [
+  ...procedimientos.map((p) => ({
+    id: p.id,
+    title: p.title,
+    category: p.category,
+    section: "procedimientos" as SectionKey,
+  })),
+  ...planes.map((p) => ({
+    id: p.id,
+    title: p.nombre,
+    category: p.empresa,
+    section: "cuentas" as SectionKey,
+  })),
+  ...extensiones.map((e, i) => ({
+    id: `ext-${i}`,
+    title: e.cuenta,
+    category: "Extensión piloto",
+    section: "pilotos" as SectionKey,
+  })),
+  ...telefonosClientes.map((c, i) => ({
+    id: `tel-${i}`,
+    title: c.name,
+    category: "Teléfono cliente",
+    section: "pilotos" as SectionKey,
+  })),
+  ...links.map((l) => ({
+    id: l.id,
+    title: l.name,
+    category: l.category,
+    section: "links" as SectionKey,
+  })),
+  ...proveedores.map((p) => ({
+    id: p.id,
+    title: p.name,
+    category: p.region,
+    section: "proveedores" as SectionKey,
+  })),
+  ...preguntas.map((q) => ({
+    id: q.id,
+    title: `${q.emoji} ${q.titulo}`,
+    category: q.categoria,
+    section: "preguntas" as SectionKey,
+  })),
+];
+
+// ── Guías rápidas (procedimientos de uso frecuente) ──────────────────────────
+
+interface GuideInfo {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  icon: ReactNode;
+  procedure: Procedure;
+}
+
+const GUIAS: GuideInfo[] = [
+  {
+    id: procedimientos[0].id,
+    title: procedimientos[0].title,
+    description: "Toma de datos, coordinación con proveedor y restricciones del servicio.",
+    category: procedimientos[0].category,
+    icon: <Paintbrush size={20} />,
+    procedure: procedimientos[0],
+  },
+  {
+    id: procedimientos[1].id,
+    title: procedimientos[1].title,
+    description: "Validación en SOA, preguntas de descarte, asignación de proveedor y cierre.",
+    category: procedimientos[1].category,
+    icon: <Monitor size={20} />,
+    procedure: procedimientos[1],
+  },
+  {
+    id: procedimientos[2].id,
+    title: procedimientos[2].title,
+    description: "Reintegro económico o de beneficios — datos requeridos y delegación a PDELOSREYES.",
+    category: procedimientos[2].category,
+    icon: <Receipt size={20} />,
+    procedure: procedimientos[2],
+  },
+];
+
+
+// ── Card local para guías ─────────────────────────────────────────────────────
+
+function GuideCard({ guide, onClick }: { guide: GuideInfo; onClick: () => void }) {
+  const categoryColors: Record<string, string> = {
+    "Servicios Hogar": "bg-pink-50 text-pink-700",
+    "Operaciones":     "bg-indigo-50 text-indigo-700",
+    "Reintegros":      "bg-rose-50 text-rose-700",
+  };
+  const color = categoryColors[guide.category] ?? "bg-gray-100 text-gray-600";
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <button
+      onClick={onClick}
+      className="group flex flex-col gap-4 rounded-2xl border border-gray-200 bg-white p-5 text-left shadow-sm transition-all duration-200 hover:border-indigo-200 hover:shadow-md hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${color}`}>
+          {guide.icon}
+        </div>
+        <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${color}`}>
+          {guide.category}
+        </span>
+      </div>
+
+      <div className="flex flex-col gap-1.5">
+        <h3 className="text-sm font-semibold text-gray-900 leading-snug">{guide.title}</h3>
+        <p className="text-xs text-gray-500 leading-relaxed line-clamp-2">{guide.description}</p>
+      </div>
+
+      <div className="mt-auto flex items-center justify-between border-t border-gray-100 pt-3">
+        <span className="text-xs text-gray-400">{guide.procedure.steps.length} pasos</span>
+        <span className="text-xs font-semibold text-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity">
+          Ver procedimiento →
+        </span>
+      </div>
+    </button>
+  );
+}
+
+// ── Accesos directos ─────────────────────────────────────────────────────────
+
+const ACCESOS = [
+  { id: "sigma",     label: "Sigma Dental"   },
+  { id: "imed",      label: "IMED La Polar"  },
+  { id: "sura",      label: "Portal SURA"    },
+  { id: "intranet",  label: "Intranet"       },
+  { id: "rut",       label: "Rutificador"    },
+  { id: "patentes",  label: "Patentes"       },
+];
+
+// ── Página ────────────────────────────────────────────────────────────────────
+
+export default function HomePage() {
+  const [activeModal, setActiveModal] = useState<ModalKey>(null);
+  const [activeGuide, setActiveGuide] = useState<Procedure | null>(null);
+  const [rightOpen, setRightOpen] = useState(true);
+
+  const open = (key: SectionKey) => setActiveModal(key);
+  const close = () => setActiveModal(null);
+
+  return (
+    <>
+      <Header
+        searchData={searchData}
+        onResultClick={(r) => setActiveModal(r.section)}
+        onTomarDatos={() => open("preguntas")}
+      />
+
+      <div className="flex flex-1 min-h-0">
+        {/* Sidebar */}
+        <aside className="w-56 shrink-0 sticky top-[57px] h-[calc(100vh-57px)] flex flex-col border-r border-gray-200 bg-white">
+          <div className="flex-1 overflow-y-auto px-3 py-5">
+            <p className="mb-1 px-3 text-[11px] font-semibold uppercase tracking-widest text-gray-400">
+              Directorio
+            </p>
+            <BentoGrid>
+              <BentoCard
+                number={1}
+                color="bg-indigo-600"
+                title="Cuentas / Planes"
+                count={planes.length}
+                countLabel="planes"
+                onClick={() => open("cuentas")}
+              />
+              <BentoCard
+                number={2}
+                color="bg-violet-600"
+                title="Procedimientos"
+                count={procedimientos.length}
+                countLabel="proc."
+                onClick={() => open("procedimientos")}
+              />
+              <BentoCard
+                number={3}
+                color="bg-sky-600"
+                title="Pilotos y Teléfonos"
+                count={extensiones.length + telefonosClientes.length}
+                countLabel="entradas"
+                onClick={() => open("pilotos")}
+              />
+              <BentoCard
+                number={4}
+                color="bg-emerald-600"
+                title="Links y Contraseñas"
+                count={links.length}
+                countLabel="entradas"
+                onClick={() => open("links")}
+              />
+              <BentoCard
+                number={5}
+                color="bg-rose-600"
+                title="Proveedores"
+                count={proveedores.length}
+                countLabel="proveedores"
+                onClick={() => open("proveedores")}
+              />
+            </BentoGrid>
+          </div>
+          <div className="border-t border-gray-100 px-5 py-3">
+            <p className="text-[11px] text-gray-300 font-medium">Gestión Chile 2.0</p>
+          </div>
+        </aside>
+
+        {/* Main content */}
+        <main className="flex-1 overflow-y-auto px-8 py-8">
+          <div className="max-w-5xl">
+            <h1 className="text-2xl font-bold text-gray-900">Panel de Control</h1>
+            <p className="mt-1 text-sm text-gray-400">
+              Encuentra la información más relevante haciendo click
+            </p>
+
+            <div className="mt-8">
+              <div className="flex items-baseline gap-3 mb-4">
+                <h2 className="text-base font-semibold text-gray-800">Guías rápidas</h2>
+                <span className="text-xs text-gray-400">{GUIAS.length} guías disponibles</span>
+              </div>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                {GUIAS.map((guide) => (
+                  <GuideCard
+                    key={guide.id}
+                    guide={guide}
+                    onClick={() => setActiveGuide(guide.procedure)}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        </main>
+
+        {/* Right panel — Accesos Directos */}
+        <aside
+          className={`shrink-0 sticky top-[57px] h-[calc(100vh-57px)] flex flex-col bg-red-600 border-l border-red-700 transition-all duration-300 ease-in-out overflow-hidden ${
+            rightOpen ? "w-40" : "w-9"
+          }`}
+        >
+          {/* Toggle */}
+          <button
+            onClick={() => setRightOpen(!rightOpen)}
+            title={rightOpen ? "Colapsar" : "Expandir accesos"}
+            className="flex h-10 w-full shrink-0 items-center justify-center border-b border-red-700/50 text-white/60 hover:text-white hover:bg-red-700/40 transition-colors"
+          >
+            {rightOpen ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+          </button>
+
+          {/* Shortcuts */}
+          <div className="flex-1 overflow-y-auto overflow-x-hidden py-3 px-1.5">
+            <p
+              className={`mb-2 px-2 text-[10px] font-bold uppercase tracking-widest text-white/40 transition-opacity duration-200 ${
+                rightOpen ? "opacity-100" : "opacity-0"
+              }`}
+            >
+              Accesos
+            </p>
+            <div className="flex flex-col gap-0.5">
+              {ACCESOS.map((a) => (
+                <button
+                  key={a.id}
+                  onClick={() => open("links")}
+                  title={a.label}
+                  className="group flex w-full items-center gap-2.5 rounded-xl px-2 py-2.5 text-left hover:bg-white/15 transition-colors"
+                >
+                  <ExternalLink
+                    size={13}
+                    className="shrink-0 text-white/60 group-hover:text-white transition-colors"
+                  />
+                  <span
+                    className={`overflow-hidden whitespace-nowrap text-xs font-semibold text-white transition-all duration-300 ${
+                      rightOpen ? "max-w-[120px] opacity-100" : "max-w-0 opacity-0"
+                    }`}
+                  >
+                    {a.label}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </aside>
+      </div>
+
+      {/* Modales — todos usan StepList vía ProcedureModal */}
+      <ProcedureModal
+        title="Procedimientos"
+        procedures={procedimientos}
+        open={activeModal === "procedimientos"}
+        onClose={close}
+      />
+      <ProcedureModal
+        title="Cuentas / Planes"
+        procedures={planesAsProcedures}
+        open={activeModal === "cuentas"}
+        onClose={close}
+      />
+      <TomarDatosModal
+        preguntas={preguntas}
+        open={activeModal === "preguntas"}
+        onClose={close}
+      />
+
+      {/* Modales especializados (directorio y herramientas) */}
+      <PilotosModal
+        extensiones={extensiones}
+        telefonosClientes={telefonosClientes}
+        open={activeModal === "pilotos"}
+        onClose={close}
+      />
+      <LinksModal
+        links={links}
+        open={activeModal === "links"}
+        onClose={close}
+      />
+      <ProveedoresModal
+        proveedores={proveedores}
+        open={activeModal === "proveedores"}
+        onClose={close}
+      />
+
+      {/* Modal de guías rápidas */}
+      {activeGuide && (
+        <ProcedureModal
+          title="Guía rápida"
+          procedures={[activeGuide]}
+          open={true}
+          onClose={() => setActiveGuide(null)}
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+      )}
+    </>
   );
 }

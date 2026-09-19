@@ -1,0 +1,87 @@
+import { LinkEntry } from "@/types";
+
+export const links: LinkEntry[] = [
+  {
+    id: "link-001",
+    name: "Corepei Voccare",
+    category: "Correo Interno",
+    username: "corepei5@voccare.global",
+    password: "voccarecorepei5",
+  },
+  {
+    id: "link-002",
+    name: "SIGMA — Solicitud de Citas",
+    category: "Dental / Médico",
+    url: "https://sdsigma.com/americanassist/solicitudcitas",
+    notes: "Teléfono: 800 331 010",
+  },
+  {
+    id: "link-003",
+    name: "Saludtech",
+    category: "Dental / Médico",
+    url: "https://saludtech.cl/users/sign_in?not_patient_login=true",
+    username: "corepei5@voccare.global",
+    password: "Addiuva1!",
+  },
+  {
+    id: "link-004",
+    name: "Portal SURA — Asistencias",
+    category: "Aseguradoras",
+    url: "https://seguros.sura.cl/PortalAsistencias/",
+    username: "servicioalclientecl@addiuva.com",
+    password: "123456",
+    notes: "Nuevo Proveedores Remolques y Auxilio Vial CL 30/04/2026",
+  },
+  {
+    id: "link-005",
+    name: "Rutificador",
+    category: "Herramientas",
+    url: "https://elrutificador.com/resultados",
+  },
+  {
+    id: "link-006",
+    name: "UF Hoy",
+    category: "Herramientas",
+    url: "https://www.uf-hoy.com/",
+    notes: "Alternativo: https://www.sii.cl/valores_y_fechas/uf/uf2025.htm",
+  },
+  {
+    id: "link-007",
+    name: "Calcular IVA (Chile 19%)",
+    category: "Herramientas",
+    url: "https://calculariva.es/chile.html?rate=19",
+    notes: "Prefijo Chile: 769 + (9 números)",
+  },
+  {
+    id: "link-008",
+    name: "Intranet — Condicionados CL",
+    category: "Intranet",
+    url: "http://192.168.20.242/index.php/servicios/paises/multipais-sur/ch/b-condicionados-cl",
+    notes: "Solo disponible en red interna.",
+  },
+  {
+    id: "link-009",
+    name: "Validador Salud BCF — LA POLAR",
+    category: "Validadores",
+    url: "https://sac.techio.cl/gamexamplelogin",
+    username: "vcatalan@addiuva.com",
+    password: '[5-N99aZz4"N',
+    notes: "Instructivo: RE-GSC-TR-02 PLATAFORMA DE VALIDACIÓN Y PROCEDIMIENTO PLANES 781 - 780",
+  },
+  {
+    id: "link-010",
+    name: "Plataforma IMED — Descuento Plan 780 LA POLAR",
+    category: "Validadores",
+    url: "https://addiuva.cl/cabina",
+    username: "cabina",
+    password: "cabina2026",
+    notes:
+      "El afiliado debe tener el turno previamente solicitado en centro médico. Cargar formulario para que le hagan el descuento.",
+  },
+  {
+    id: "link-011",
+    name: "Validador Patentes",
+    category: "Herramientas",
+    url: "https://www.patentechile.com/",
+  },
+];
