@@ -59,7 +59,7 @@ export function Header({ searchData, onResultClick, onTomarDatos }: HeaderProps)
   };
 
   return (
-    <header className="sticky top-0 z-40 border-b border-gray-200 bg-white/95 backdrop-blur-md">
+    <header className="sticky top-0 z-40 bg-gray-50/95 backdrop-blur-md">
       <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-3 sm:px-6">
         {/* Logo */}
         <div className="flex items-center gap-2.5 shrink-0">
@@ -68,13 +68,16 @@ export function Header({ searchData, onResultClick, onTomarDatos }: HeaderProps)
         </div>
 
         {/* Tomar datos */}
-        <button
-          onClick={onTomarDatos}
-          className="flex items-center gap-2 rounded-xl border border-indigo-200 bg-indigo-600 px-3 py-2 text-xs font-medium text-white hover:bg-indigo-700 transition-colors shrink-0"
-        >
-          <ClipboardCheck size={14} />
-          <span className="hidden sm:inline">¿Cómo tomar datos?</span>
-        </button>
+        <div className="border-travel-wrapper shrink-0">
+          <button
+            onClick={onTomarDatos}
+            className="relative flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-indigo-700 cursor-pointer transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[3px_3px_8px_#a5b4fc,_-3px_-3px_8px_#ffffff]"
+            style={{ background: "#e0e7ff" }}
+          >
+            <ClipboardCheck size={14} />
+            <span className="hidden sm:inline">¿Cómo tomar datos?</span>
+          </button>
+        </div>
 
         {/* Search */}
         <div ref={containerRef} className="relative w-full max-w-sm">

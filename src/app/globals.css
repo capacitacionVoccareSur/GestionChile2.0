@@ -10,6 +10,34 @@ body {
   color: var(--foreground);
 }
 
+/* Borde viajero — botón tomar datos (corre 2 veces al cargar y desaparece) */
+@property --border-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes border-travel {
+  0%   { --border-angle: 0deg;   opacity: 1; }
+  88%  { --border-angle: 720deg; opacity: 1; }
+  100% { --border-angle: 720deg; opacity: 0; }
+}
+
+.border-travel-wrapper {
+  position: relative;
+  display: inline-flex;
+  border-radius: 0.75rem;
+}
+
+.border-travel-wrapper::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 0.85rem;
+  background: conic-gradient(from var(--border-angle), #6366f1, #a5b4fc, #e0e7ff, #6366f1);
+  animation: border-travel 3s linear 1 forwards;
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 6px;

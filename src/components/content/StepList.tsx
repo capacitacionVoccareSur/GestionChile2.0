@@ -10,7 +10,8 @@ export function StepList({ steps }: StepListProps) {
     <ol className="flex flex-col gap-3">
       {steps.map((step, index) => (
         <li key={index} className="flex gap-3">
-          <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-indigo-50 text-xs font-bold text-indigo-600 ring-1 ring-indigo-200 mt-0.5">
+          <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold text-indigo-600 mt-0.5"
+            style={{ background: "#e0e7ff", boxShadow: "2px 2px 5px #a5b4fc, -2px -2px 5px #ffffff" }}>
             {index + 1}
           </div>
 

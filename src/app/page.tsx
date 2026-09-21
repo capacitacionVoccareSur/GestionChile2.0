@@ -178,23 +178,40 @@ const GUIAS: GuideInfo[] = [
 // ── Card local para guías ─────────────────────────────────────────────────────
 
 function GuideCard({ guide, onClick }: { guide: GuideInfo; onClick: () => void }) {
-  const categoryColors: Record<string, string> = {
-    "Servicios Hogar": "bg-pink-50 text-pink-700",
-    "Operaciones":     "bg-indigo-50 text-indigo-700",
-    "Reintegros":      "bg-rose-50 text-rose-700",
+  const [pressed, setPressed] = useState(false);
+  const [hovered, setHovered] = useState(false);
+
+  const shadow = pressed
+    ? "inset 3px 3px 8px #e5e7eb, inset -3px -3px 8px #ffffff"
+    : hovered
+    ? "6px 6px 14px #e5e7eb, -6px -6px 14px #ffffff"
+    : "4px 4px 10px #e5e7eb, -4px -4px 10px #ffffff";
+
+  const categoryColors: Record<string, { bg: string; shadowDark: string; text: string }> = {
+    "Servicios Hogar": { bg: "#fce7f3", shadowDark: "#f9a8d4", text: "#9d174d" },
+    "Operaciones":     { bg: "#e0e7ff", shadowDark: "#a5b4fc", text: "#3730a3" },
+    "Reintegros":      { bg: "#ffe4e6", shadowDark: "#fda4af", text: "#9f1239" },
   };
-  const color = categoryColors[guide.category] ?? "bg-gray-100 text-gray-600";
+  const cat = categoryColors[guide.category] ?? { bg: "#f3f4f6", shadowDark: "#d1d5db", text: "#374151" };
 
   return (
     <button
       onClick={onClick}
-      className="group flex flex-col gap-4 rounded-2xl border border-gray-200 bg-white p-5 text-left shadow-sm transition-all duration-200 hover:border-indigo-200 hover:shadow-md hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => { setHovered(false); setPressed(false); }}
+      onMouseDown={() => setPressed(true)}
+      onMouseUp={() => setPressed(false)}
+      className="group flex flex-col gap-4 rounded-2xl p-5 text-left focus-visible:outline-none transition-shadow duration-150 cursor-pointer"
+      style={{ background: "#f9fafb", boxShadow: shadow }}
     >
       <div className="flex items-start justify-between gap-3">
-        <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${color}`}>
+        <div
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-shadow duration-150"
+          style={{ background: cat.bg, boxShadow: `2px 2px 6px ${cat.shadowDark}, -2px -2px 6px #ffffff`, color: cat.text }}
+        >
           {guide.icon}
         </div>
-        <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${color}`}>
+        <span className="rounded-full px-2.5 py-0.5 text-xs font-medium" style={{ background: cat.bg, color: cat.text }}>
           {guide.category}
         </span>
       </div>
@@ -204,7 +221,7 @@ function GuideCard({ guide, onClick }: { guide: GuideInfo; onClick: () => void }
         <p className="text-xs text-gray-500 leading-relaxed line-clamp-2">{guide.description}</p>
       </div>
 
-      <div className="mt-auto flex items-center justify-between border-t border-gray-100 pt-3">
+      <div className="mt-auto flex items-center justify-between pt-3 border-t border-gray-100">
         <span className="text-xs text-gray-400">{guide.procedure.steps.length} pasos</span>
         <span className="text-xs font-semibold text-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity">
           Ver procedimiento →
@@ -243,17 +260,17 @@ export default function HomePage() {
         onTomarDatos={() => open("preguntas")}
       />
 
-      <div className="flex flex-1 min-h-0">
+      <div className="flex flex-1 overflow-hidden">
         {/* Sidebar */}
-        <aside className="w-56 shrink-0 sticky top-[57px] h-[calc(100vh-57px)] flex flex-col border-r border-gray-200 bg-white">
-          <div className="flex-1 overflow-y-auto px-3 py-5">
-            <p className="mb-1 px-3 text-[11px] font-semibold uppercase tracking-widest text-gray-400">
+        <aside className="w-44 shrink-0 flex flex-col">
+          <div className="flex flex-col flex-1 min-h-0 overflow-y-auto px-5 py-4">
+            <p className="mb-1 px-2 text-[10px] font-semibold uppercase tracking-widest text-gray-400 shrink-0">
               Directorio
             </p>
-            <BentoGrid>
+            <BentoGrid className="flex-1 min-h-0">
               <BentoCard
                 number={1}
-                color="bg-indigo-600"
+                colorKey="indigo"
                 title="Cuentas / Planes"
                 count={planes.length}
                 countLabel="planes"
@@ -261,7 +278,7 @@ export default function HomePage() {
               />
               <BentoCard
                 number={2}
-                color="bg-violet-600"
+                colorKey="violet"
                 title="Procedimientos"
                 count={procedimientos.length}
                 countLabel="proc."
@@ -269,7 +286,7 @@ export default function HomePage() {
               />
               <BentoCard
                 number={3}
-                color="bg-sky-600"
+                colorKey="sky"
                 title="Pilotos y Teléfonos"
                 count={extensiones.length + telefonosClientes.length}
                 countLabel="entradas"
@@ -277,7 +294,7 @@ export default function HomePage() {
               />
               <BentoCard
                 number={4}
-                color="bg-emerald-600"
+                colorKey="emerald"
                 title="Links y Contraseñas"
                 count={links.length}
                 countLabel="entradas"
@@ -285,7 +302,7 @@ export default function HomePage() {
               />
               <BentoCard
                 number={5}
-                color="bg-rose-600"
+                colorKey="rose"
                 title="Proveedores"
                 count={proveedores.length}
                 countLabel="proveedores"
@@ -293,14 +310,15 @@ export default function HomePage() {
               />
             </BentoGrid>
           </div>
-          <div className="border-t border-gray-100 px-5 py-3">
+          <div className="px-3 py-2.5">
             <p className="text-[11px] text-gray-300 font-medium">Gestión Chile 2.0</p>
           </div>
         </aside>
 
         {/* Main content */}
-        <main className="flex-1 overflow-y-auto px-8 py-8">
-          <div className="max-w-5xl">
+        <main className="flex-1 overflow-y-auto px-6 py-6">
+          <div className="max-w-5xl h-full">
+          <div className="rounded-2xl border border-gray-200 bg-white px-8 py-8 min-h-full">
             <h1 className="text-2xl font-bold text-gray-900">Panel de Control</h1>
             <p className="mt-1 text-sm text-gray-400">
               Encuentra la información más relevante haciendo click
@@ -322,11 +340,12 @@ export default function HomePage() {
               </div>
             </div>
           </div>
+          </div>
         </main>
 
         {/* Right panel — Accesos Directos */}
         <aside
-          className={`shrink-0 sticky top-[57px] h-[calc(100vh-57px)] flex flex-col bg-red-600 border-l border-red-700 transition-all duration-300 ease-in-out overflow-hidden ${
+          className={`shrink-0 flex flex-col bg-red-600 transition-all duration-300 ease-in-out overflow-hidden my-4 mr-4 rounded-2xl ${
             rightOpen ? "w-40" : "w-9"
           }`}
         >
@@ -346,7 +365,7 @@ export default function HomePage() {
                 rightOpen ? "opacity-100" : "opacity-0"
               }`}
             >
-              Accesos
+              Accesos directos
             </p>
             <div className="flex flex-col gap-0.5">
               {ACCESOS.map((a) => (
@@ -354,7 +373,7 @@ export default function HomePage() {
                   key={a.id}
                   onClick={() => open("links")}
                   title={a.label}
-                  className="group flex w-full items-center gap-2.5 rounded-xl px-2 py-2.5 text-left hover:bg-white/15 transition-colors"
+                  className="group flex w-full items-center gap-2.5 rounded-xl px-2 py-2.5 text-left hover:bg-white/15 transition-colors cursor-pointer"
                 >
                   <ExternalLink
                     size={13}
