@@ -126,4 +126,58 @@ export const procedimientos: Procedure[] = [
       },
     ],
   },
+  {
+    id: "proc-004",
+    title: "¿Cómo asignar servicios de hogar?",
+    category: "Servicios Hogar",
+    tags: ["hogar", "proveedor", "soa", "rotación"],
+    steps: [
+      {
+        title: "Verificar en sistema",
+        description:
+          "Antes de buscar proveedor, confirmar que el afiliado y la asistencia están correctos.",
+        subSteps: [
+          "Verificar si valida en sistema y se creó correctamente",
+          "Verificar si tiene eventos disponibles",
+        ],
+      },
+      {
+        title: "Buscar proveedor — Rotación (Fase 1)",
+        description:
+          "Si procede el servicio, buscar proveedor en la planilla de rotación según zona y tipo de servicio.",
+        subSteps: [
+          "Ingresar a la rotación de proveedores (ver link en nota)",
+          "Llamar según zona, servicio y orden de prioridad",
+          "La rotación cubre: Santiago, Bío Bío, Valparaíso y Coquimbo",
+          "Para otras regiones: buscar en SOA manualmente filtrando por Entidad 1 y Entidad 2",
+        ],
+        note: "Rotación de proveedores: https://docs.google.com/spreadsheets/d/1ZN6LU5WtrXmaU7_mfNESw992e7gO6WawHoIlb219K9I/edit?gid=1192108769#gid=1192108769",
+        warning: "Toda llamada saliente debe marcar con código de área 769 + 9 dígitos.",
+      },
+      {
+        title: "Coordinar horario con proveedor y afiliado",
+        description:
+          "Confirmar disponibilidad de ambas partes. Ambos deben estar de acuerdo antes de proceder.",
+        subSteps: [
+          "Confirmar horario con el proveedor",
+          "Confirmar horario con el afiliado",
+          "Ambos deben estar de acuerdo antes de enviar los datos",
+        ],
+        warning: "El margen de coordinación es de 2 horas — no agendar con menos tiempo.",
+      },
+      {
+        title: "Enviar datos y asignar en SOA (Fase 2)",
+        description:
+          "Enviar la siguiente estructura de datos al proveedor y asignar el servicio en SOA.",
+        template: "Exp: \nAsist: \nNombre afiliado: \nDirección: \nFecha programada: \nDescripción del daño: ",
+        note: "Canales de envío:",
+        noteItems: [
+          "WhatsApp Cabina Chile: +54 9 11 2159-1976",
+          "Correo: corepei5@voccare.global  |  Contraseña: voccarecorepei5",
+          "Grupo WhatsApp 'Envío de servicios Chile': https://chat.whatsapp.com/LfnEtijBOMhBQeJFqFEth2",
+        ],
+        warning: "Al enviar al grupo de WhatsApp, incluir también el nombre del proveedor y su teléfono.",
+      },
+    ],
+  },
 ];

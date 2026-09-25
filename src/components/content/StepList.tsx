@@ -1,5 +1,57 @@
+"use client";
+
+import { useState } from "react";
 import { Step } from "@/types";
-import { AlertCircle, Info } from "lucide-react";
+import { AlertCircle, Info, Copy, Check } from "lucide-react";
+
+const URL_REGEX = /https?:\/\/[^\s]+/g;
+
+function CopyableTemplate({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
+
+  return (
+    <div className="mt-1 rounded-lg border border-gray-200 bg-gray-50 overflow-hidden w-fit min-w-[200px]">
+      <div className="flex items-center justify-between px-3 py-1.5 border-b border-gray-200 bg-gray-100">
+        <span className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">Plantilla</span>
+        <button
+          onClick={handleCopy}
+          className="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium transition-colors"
+          style={{ color: copied ? "#059669" : "#6366f1" }}
+        >
+          {copied ? <Check size={12} /> : <Copy size={12} />}
+          {copied ? "Copiado" : "Copiar"}
+        </button>
+      </div>
+      <pre className="px-3 py-2.5 text-xs text-gray-600 leading-relaxed whitespace-pre-wrap font-mono">{text}</pre>
+    </div>
+  );
+}
+
+function linkify(text: string) {
+  const parts = text.split(URL_REGEX);
+  const urls = text.match(URL_REGEX) ?? [];
+  return parts.flatMap((part, i) => [
+    part,
+    urls[i] ? (
+      <a
+        key={i}
+        href={urls[i]}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="underline break-all hover:opacity-80"
+      >
+        {urls[i]}
+      </a>
+    ) : null,
+  ]);
+}
 
 interface StepListProps {
   steps: Step[];
@@ -32,6 +84,8 @@ export function StepList({ steps }: StepListProps) {
               </ul>
             )}
 
+            {step.template && <CopyableTemplate text={step.template} />}
+
             {step.image && (
               <img
                 src={step.image}
@@ -40,17 +94,31 @@ export function StepList({ steps }: StepListProps) {
               />
             )}
 
-            {step.note && (
+            {(step.note || step.noteItems) && (
               <div className="mt-1 flex gap-2 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2">
                 <Info size={13} className="shrink-0 text-indigo-500 mt-0.5" />
-                <p className="text-xs text-indigo-700 leading-normal">{step.note}</p>
+                <div className="flex flex-col gap-1">
+                  {step.note && (
+                    <p className="text-xs text-indigo-700 leading-normal">{linkify(step.note)}</p>
+                  )}
+                  {step.noteItems && (
+                    <ul className="flex flex-col gap-0.5">
+                      {step.noteItems.map((item, i) => (
+                        <li key={i} className="flex items-start gap-1.5 text-xs text-indigo-700">
+                          <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-indigo-400" />
+                          <span>{linkify(item)}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
               </div>
             )}
 
             {step.warning && (
               <div className="mt-1 flex gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2">
                 <AlertCircle size={13} className="shrink-0 text-amber-500 mt-0.5" />
-                <p className="text-xs text-amber-700 leading-normal">{step.warning}</p>
+                <p className="text-xs text-amber-700 leading-normal">{linkify(step.warning!)}</p>
               </div>
             )}
           </div>

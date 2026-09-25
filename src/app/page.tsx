@@ -5,6 +5,7 @@ import {
   Receipt,
   Monitor,
   Paintbrush,
+  Wrench,
   ChevronLeft,
   ChevronRight,
   ExternalLink,
@@ -171,6 +172,14 @@ const GUIAS: GuideInfo[] = [
     category: procedimientos[2].category,
     icon: <Receipt size={20} />,
     procedure: procedimientos[2],
+  },
+  {
+    id: procedimientos[3].id,
+    title: procedimientos[3].title,
+    description: "Verificación en sistema, rotación de proveedores y envío de datos al coordinar.",
+    category: procedimientos[3].category,
+    icon: <Wrench size={20} />,
+    procedure: procedimientos[3],
   },
 ];
 

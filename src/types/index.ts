@@ -4,7 +4,9 @@ export interface Step {
   image?: string;
   video?: string;
   subSteps?: string[];
+  template?: string;
   note?: string;
+  noteItems?: string[];
   warning?: string;
 }
 
